@@ -4,20 +4,24 @@ namespace Scenes.Script
 {
     public class Controller : MonoBehaviour
     {
-        public float moveSpeed = 15f;
-        public float rotationSpeed = 20f;
+        public float moveSpeed = 10f, gravityforce = 3f, jumpForce = 5f, sprintMultiplier = 25f;
+        public float rotationSpeed = 200f;
         public GameObject head;
-        
+
         private CharacterController _controller;
         private float _verticalRotation = 0f;
-        private float _horizontalRotation = 0f;  // Variable pour gérer la rotation horizontale
+        private float _horizontalRotation = 0f;
         public float minYRotation = -50f;
         public float maxYRotation = 50f;
+        private Vector3 _velocity;
+        private bool _isGrounded;
+        public Transform groundCheckPoint;
+        public LayerMask groundLayer;
 
         private void Start()
         {
-            Cursor.lockState = CursorLockMode.Locked; // Verrouille le curseur au centre de l'écran
-            Cursor.visible = false; // Masque le curseur
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
         private void Awake()
@@ -27,37 +31,53 @@ namespace Scenes.Script
 
         private void Update()
         {
-            // Déplacement horizontal et vertical
-            float moveX = Input.GetAxis("Horizontal") * moveSpeed;
-            float moveZ = Input.GetAxis("Vertical") * moveSpeed;
-            Vector3 move = transform.right * moveX + transform.forward * moveZ;
-            
-            // Appliquer le mouvement
+            // Vérification du sol
+            _isGrounded = Physics.CheckSphere(groundCheckPoint.position, 0.3f, groundLayer);
+
+            if (_isGrounded && _velocity.y < 0)
+            {
+                _velocity.y = -2f;
+            }
+
+            // Gestion du sprint
+            float speed = moveSpeed;
+            if (Input.GetKey(KeyCode.LeftShift)) 
+            {
+                speed = sprintMultiplier; // Sprint activé si LeftShift est enfoncé
+            }
+
+            // Déplacement horizontal
+            float moveX = Input.GetAxis("Horizontal") * speed;
+            float moveZ = Input.GetAxis("Vertical") * speed;
+            Vector3 move = (transform.right * moveX + transform.forward * moveZ);
             _controller.Move(move * Time.deltaTime);
 
-            // Rotation horizontale avec la souris (ou le joystick droit)
+            // Saut
+            if (_isGrounded && Input.GetKeyDown(KeyCode.Space))
+            {
+                _velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y);
+            }
+
+            // Appliquer la gravité
+            _velocity.y += Physics.gravity.y * gravityforce * Time.deltaTime;
+            _controller.Move(_velocity * Time.deltaTime);
+
+            // Rotation horizontale
             float mouseX = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
+            _horizontalRotation += mouseX;
+            transform.localRotation = Quaternion.Euler(0, _horizontalRotation, 0);
 
-
-            // Inverser la valeur du joystick X pour que la direction soit correcte
-
-
-            // Ajouter la rotation horizontale avec la souris et le joystick
-            _horizontalRotation += mouseX;  // Rotation horizontale combinée
-            transform.localRotation = Quaternion.Euler(0, _horizontalRotation, 0);  // Appliquer la rotation horizontale
-
-            // Rotation verticale avec la souris
+            // Rotation verticale
             float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
-            _verticalRotation -= mouseY; // Appliquer la rotation verticale pour la souris
+            _verticalRotation -= mouseY;
             _verticalRotation = Mathf.Clamp(_verticalRotation, minYRotation, maxYRotation);
             head.transform.localRotation = Quaternion.Euler(_verticalRotation, 0, 0);
-            
         }
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = Color.green;
-            Gizmos.DrawRay(head.transform.position, head.transform.forward * 1000);
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(groundCheckPoint.position, 0.3f);
         }
     }
 }
