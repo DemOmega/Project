@@ -1,53 +1,86 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Scenes.Script
 {
-    public class Guncontroler2 : MonoBehaviour
+    public class GunController2 : MonoBehaviour
     {
-        public GameObject projectilePrefab;
-        public GameObject particulePrefab;
-        public Transform raycastOrigin;
-        public float power = 10f;
-        public int bulletCount = 6; 
-        public float spreadAngle = 10f; 
+        public Transform firePoint; // L'endroit d'où part la balle
+        public LineRenderer bulletTrail; // Ligne pour simuler la balle
+        public Light muzzleFlash; // Flash au bout du canon
+        public float range = 100f; // Portée de la balle
+        public float fireRate = 0.2f; // Temps entre chaque tir
+        public float bulletTrailTime = 0.05f; // Durée du bullet trail
+        public GameObject impactFramePrefabs;
+        public GameObject impactEffectPrefabs;
 
-        void Update()
+        private float nextFireTime = 0f;
+        private bool isShooting = false;
+
+        public void OnShoot(InputAction.CallbackContext context)
         {
-            if (Input.GetButtonDown("Fire1"))
+            
+            if (context.performed)
             {
-                ShootShotgun();
+                isShooting = true;
+                Shoot();
+            }
+            else if (context.canceled)
+            {
+                isShooting = false;
+            }
+        }
+
+        private void Shoot()
+        {
+            if (Time.time < nextFireTime) return; // Empêche de tirer trop vite
+
+            nextFireTime = Time.time + fireRate;
+
+            // Flash de tir
+            if (muzzleFlash != null)
+            {
+                muzzleFlash.enabled = true;
+                Invoke(nameof(HideMuzzleFlash), 0.05f);
             }
 
-            if (Input.GetButtonDown("Fire2"))
+            // Raycast pour détecter l'impact
+            RaycastHit hit;
+            if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, range))
             {
-                if (Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out var hitInfo))
+                GameObject impactVFX = Instantiate(impactEffectPrefabs, hit.point, Quaternion.identity);
+                GameObject impact = Instantiate(impactFramePrefabs, hit.point, Quaternion.LookRotation(hit.normal));
+
+                impact.transform.localScale *= 0.5f;
+                // Afficher l'impact
+                if (impactEffectPrefabs != null)
                 {
-                    Instantiate(particulePrefab, hitInfo.point, Quaternion.Euler(hitInfo.transform.forward));
+                    Instantiate(impactEffectPrefabs, hit.point, Quaternion.LookRotation(hit.normal));
+                }
+
+                // Simuler un bullet trail
+                if (bulletTrail != null)
+                {
+                    StartCoroutine(ShowBulletTrail(hit.point));
                 }
             }
         }
 
-        void ShootShotgun()
+        private void HideMuzzleFlash()
         {
-            for (int i = 0; i < bulletCount; i++)
-            {
-                
-                float randomX = Random.Range(-spreadAngle, spreadAngle);
-                float randomY = Random.Range(-spreadAngle, spreadAngle);
-                
-                Quaternion spreadRotation = Quaternion.Euler(randomX, randomY, 0);
-                Vector3 shootDirection = spreadRotation * transform.forward; 
-                
-                GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-                Rigidbody rb = projectile.GetComponent<Rigidbody>();
-                rb.AddForce(shootDirection * power, ForceMode.Impulse);
-            }
+            if (muzzleFlash != null) muzzleFlash.enabled = false;
         }
 
-        private void OnDrawGizmos()
+        private System.Collections.IEnumerator ShowBulletTrail(Vector3 hitPoint)
         {
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawRay(transform.position, transform.forward * 1000);
+            if (bulletTrail != null)
+            {
+                bulletTrail.enabled = true;
+                bulletTrail.SetPosition(0, firePoint.position);
+                bulletTrail.SetPosition(1, hitPoint);
+                yield return new WaitForSeconds(bulletTrailTime);
+                bulletTrail.enabled = false;
+            }
         }
     }
 }

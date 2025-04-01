@@ -4,7 +4,7 @@ namespace Scenes.Script
 {
     public class Controller : MonoBehaviour
     {
-        public float moveSpeed = 10f, gravityforce = 3f, jumpForce = 5f, sprintMultiplier = 25f;
+        public float moveSpeed = 10f, gravityforce = 3f, jumpForce = 7f, sprintMultiplier = 10f;
         public float rotationSpeed = 200f;
         public GameObject head;
 
