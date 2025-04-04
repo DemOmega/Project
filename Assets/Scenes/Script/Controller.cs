@@ -49,9 +49,9 @@ namespace Scenes.Script
             }
 
             // Déplacement horizontal
-            float moveX = Input.GetAxis("Horizontal") * speed;
-            float moveZ = Input.GetAxis("Vertical") * speed;
-            Vector3 move = (transform.right * moveX + transform.forward * moveZ);
+            float moveX = Input.GetAxis("Horizontal");
+            float moveZ = Input.GetAxis("Vertical");
+            Vector3 move = (transform.right * moveX + transform.forward * moveZ)* speed;
             _controller.Move(move * Time.deltaTime);
 
             // Saut
