@@ -4,7 +4,7 @@ namespace Scenes.Script
 {
     public class Controller : MonoBehaviour
     {
-        public float moveSpeed = 10f, gravityforce = 3f, jumpForce = 7f, sprintMultiplier = 10f;
+        public float moveSpeed = 10f, gravityforce = 3f, jumpForce = 7f, sprintMultiplier = 1.5f;
         public float rotationSpeed = 200f;
         public GameObject head;
 
@@ -17,6 +17,8 @@ namespace Scenes.Script
         private bool _isGrounded;
         public Transform groundCheckPoint;
         public LayerMask groundLayer;
+        
+        public Animator animator;
 
         private void Start()
         {
@@ -32,7 +34,7 @@ namespace Scenes.Script
         private void Update()
         {
             // Vérification du sol
-            _isGrounded = Physics.CheckSphere(groundCheckPoint.position, 0.3f, groundLayer);
+            _isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, 0.3f, groundLayer);
 
             if (_isGrounded && _velocity.y < 0)
             {
@@ -40,7 +42,7 @@ namespace Scenes.Script
             }
 
             // Gestion du sprint
-            float speed = moveSpeed;
+            float speed = moveSpeed * (Input.GetKey(KeyCode.LeftShift) ? sprintMultiplier : 1f);
             if (Input.GetKey(KeyCode.LeftShift)) 
             {
                 speed = sprintMultiplier; // Sprint activé si LeftShift est enfoncé
@@ -72,6 +74,9 @@ namespace Scenes.Script
             _verticalRotation -= mouseY;
             _verticalRotation = Mathf.Clamp(_verticalRotation, minYRotation, maxYRotation);
             head.transform.localRotation = Quaternion.Euler(_verticalRotation, 0, 0);
+            
+            animator.SetFloat("movespeed", move.magnitude);
+            animator.SetBool("onGround", _isGrounded);
         }
 
         private void OnDrawGizmos()

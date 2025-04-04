@@ -24,7 +24,8 @@ namespace Scenes.Script
         private bool _isGrounded;
         public Transform groundCheckPoint;
         public LayerMask groundLayer;
-
+        
+        
         private Vector2 _moveInput;
         private Vector2 _lookInput;
         private bool _isJumping;
@@ -33,6 +34,7 @@ namespace Scenes.Script
 
         private void Start()
         {
+            
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             _controller = GetComponent<CharacterController>();
@@ -81,6 +83,7 @@ namespace Scenes.Script
 
         private void Fire()
         {
+
             if (bulletPrefab != null && firePoint != null)
             {
                 Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);

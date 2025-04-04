@@ -7,8 +7,6 @@ namespace Scenes.Script
     public class GunController : MonoBehaviour
     {
         public GameObject projectiletPrefab;
-        public GameObject particulePrefab;
-        public Transform raycastOrigin;
         public float power;
         
         
@@ -20,15 +18,6 @@ namespace Scenes.Script
                 Rigidbody rb = projectile.GetComponent<Rigidbody>();
                 
                 rb.AddForce(transform.forward * power, ForceMode.Impulse);
-            }
-
-            if (Input.GetButtonDown("Fire2"))
-            {
-                if (Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out var hitInfo))
-                {
-                    Instantiate(particulePrefab, hitInfo.point, Quaternion.Euler(hitInfo.transform.forward));
-                    //hitInfo.transform.gameObject.GetComponent<TargetController>().Damga(1);//
-                }
             }
         }
 
