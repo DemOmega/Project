@@ -130,10 +130,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c925f58e87f9694bad573b487752bf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletSpeed: 50
+  bulletSpeed: 75
   lifeTime: 5
   theRigidbody: {fileID: 6190817063450830331}
   damage: 1
+  damageEnemy: 1
+  damagePlayer: 0
 --- !u!96 &5690991619619671839
 TrailRenderer:
   serializedVersion: 3

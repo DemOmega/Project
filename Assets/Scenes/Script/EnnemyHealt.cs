@@ -5,11 +5,13 @@ namespace Scenes.Script
     public class EnnemyHealt : MonoBehaviour
     {
         
-        public int currentHealth;
+        public int currentHealth, maxHealth;
+        public AudioSource audioSource;
+        public AudioClip deathSound;
 
         void Start()
         {
-        
+            currentHealth = maxHealth;
         }
 
 
@@ -24,8 +26,16 @@ namespace Scenes.Script
 
             if (currentHealth <= 0)
             {
-                Destroy(gameObject);
+                Die();
             }
+        }
+        void Die()
+        {
+            if (deathSound && audioSource)
+                audioSource.PlayOneShot(deathSound);
+            
+            Destroy(gameObject, deathSound.length);
         }
     }
 }
+

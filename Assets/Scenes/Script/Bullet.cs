@@ -3,26 +3,23 @@ using UnityEngine;
 
 namespace Scenes.Script
 {
-    public class Bullet: MonoBehaviour
+    public class Bullet : MonoBehaviour
     {
         public float bulletSpeed, lifeTime;
-        
-        public Rigidbody theRigidbody;
-        
-        public int damage;
-        void Start()
-        {
-        
-        }
 
-        // Update is called once per frame
+        public Rigidbody theRigidbody;
+
+        public int damage;
+
+        public bool damageEnemy, damagePlayer;
+
         void Update()
         {
-            theRigidbody.linearVelocity = transform.forward * bulletSpeed;
-            
+           theRigidbody.linearVelocity = transform.forward * bulletSpeed;
+
             lifeTime -= Time.deltaTime;
-            
-            if(lifeTime <= 0)
+
+            if (lifeTime <= 0)
             {
                 Destroy(gameObject);
             }
@@ -30,12 +27,17 @@ namespace Scenes.Script
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.tag == "Enemy")
+            if (other.gameObject.CompareTag("Enemy") && damageEnemy)
             {
-                other.gameObject.GetComponent<EnnemyHealt>().DamageEnemy(damage);
+                other.gameObject.GetComponent<EnnemyHealt>()?.DamageEnemy(damage);
             }
+
+            if (other.gameObject.CompareTag("Player") && damagePlayer)
+            { 
+                PlayerHealt.instance?.DamagePlayer(damage);
+            }
+
             Destroy(gameObject);
         }
     }
-        
 }

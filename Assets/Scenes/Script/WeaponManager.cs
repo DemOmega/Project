@@ -55,5 +55,10 @@ namespace Scenes.Script
             currentWeaponIndex = weapons.Count - 1;
             UpdateWeapon();
         }
+        
+        public BaseWeapon GetCurrentWeapon()
+        {
+            return weapons[currentWeaponIndex].GetComponent<BaseWeapon>();
+        }
     }
 }

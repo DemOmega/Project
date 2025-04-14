@@ -14,10 +14,10 @@ TagManager:
   - UI
   - ground
   - Bullet
-  - 
-  - 
-  - 
-  - 
+  - Obstacle
+  - Wakable
+  - Player
+  - Trigger
   - 
   - 
   - 

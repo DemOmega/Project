@@ -1,134 +1,133 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 namespace Scenes.Script
 {
     public class EnemyMoove : MonoBehaviour
+    
     {
-        [Header("Mouvement")]
-        public float distanceToStop = 50f;
-        public float rotationSpeed = 5f;
+        [Header("Audio")]
+        public AudioSource audioSource;
+        public AudioClip shootSound;
+        public AudioClip deathSound;
+        
+        [Header("Déplacement")]
+        public float distanceToStop = 10f;
 
         [Header("Tir")]
-        public GameObject bulletPrefab;
+        public GameObject bullet;
         public Transform firePoint;
-        public float maxShootingDistance = 150f;
-        public float fireAngleLimit = 30f;
+        public float fireRate = 0.15f;
+        public float shootingDistance = 30f;
         public LayerMask visionMask;
+        public LayerMask obstacleMask;
+        public int maxShotsBeforePause = 30;
+        public float sprayAngle = 3f; // 🔸Ajout: angle de dispersion
 
-        [Header("Cadence de tir")]
-        public float minFireDelay = 0.1f;
-        public float maxFireDelay = 0.4f;
-
-        [Header("Spray")]
-        public float sprayIncreasePerShot = 0.5f;
-        public float sprayRecoverySpeed = 1f;
-        public float maxSpray = 5f;
-
-        [Header("Animation")]
-        public Animator animator;
-
-        private float fireTimer = 0f;
-        private float nextFireTime = 0f;
-        private float currentSpray = 0f;
-
-        private NavMeshAgent agent;
+        private int shotCount = 0;
+        private float fireCooldown = 0f;
         private Transform target;
+        private NavMeshAgent agent;
 
         private void Start()
         {
             agent = GetComponent<NavMeshAgent>();
 
-            // Vérifier si le NavMeshAgent est attaché
-            if (agent == null)
-            {
-                Debug.LogError("Le NavMeshAgent n'a pas été trouvé !");
-                return;
-            }
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                target = player.transform;
+            else
+                Debug.LogError("Joueur non trouvé (tag 'Player')");
 
-            target = Controller.instance.transform;
-            nextFireTime = Random.Range(minFireDelay, maxFireDelay);
+            if (firePoint == null)
+                Debug.LogError("FirePoint non assigné !");
         }
 
         private void Update()
         {
-            if (target == null) return;
+            if (target == null || agent == null) return;
 
-            Vector3 playerPos = target.position;
-            float distance = Vector3.Distance(transform.position, playerPos);
+            float distance = Vector3.Distance(transform.position, target.position);
 
-            // Déplacement : Toujours essayer de se déplacer vers le joueur
-            agent.SetDestination(playerPos);
+            Vector3 direction = (target.position - transform.position).normalized;
+            direction.y = 0f;
+            transform.forward = direction;
 
-            // Debug: Vérifier si la destination est mise à jour
-            Debug.Log("Destination actuelle de l'ennemi: " + playerPos);
+            fireCooldown -= Time.deltaTime;
 
-            // Vérification du mouvement de l'agent
-            if (agent.velocity.magnitude > 0)
+            Vector3 dirToPlayer = (target.position - firePoint.position).normalized;
+            float distanceToPlayer = Vector3.Distance(firePoint.position, target.position);
+
+            if (!Physics.Raycast(firePoint.position, dirToPlayer, distanceToPlayer, obstacleMask))
             {
-                Debug.Log("L'ennemi se déplace !");
-            }
-            else
-            {
-                Debug.Log("L'ennemi ne bouge pas !");
-            }
-
-            // Animation de déplacement
-            if (animator)
-                animator.SetBool("isMoving", distance > distanceToStop);
-
-            // Rotation de l'ennemi vers le joueur
-            Vector3 flatDir = new Vector3((playerPos - transform.position).x, 0, (playerPos - transform.position).z);
-            if (flatDir.magnitude > 0.1f)
-            {
-                Quaternion lookRot = Quaternion.LookRotation(flatDir.normalized);
-                transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, rotationSpeed * Time.deltaTime);
-            }
-
-            firePoint.LookAt(playerPos);
-
-            // Vision et tir
-            Ray ray = new Ray(firePoint.position, (playerPos - firePoint.position).normalized);
-            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, visionMask))
-            {
-                if (hit.collider.CompareTag("Player") && distance <= maxShootingDistance)
+                if (Physics.Raycast(firePoint.position, dirToPlayer, out RaycastHit hitInfo, shootingDistance, visionMask))
                 {
-                    fireTimer += Time.deltaTime;
-                    currentSpray = Mathf.MoveTowards(currentSpray, 0f, sprayRecoverySpeed * Time.deltaTime);
-
-                    if (fireTimer >= nextFireTime && Controller.instance.gameObject.activeInHierarchy)
+                    if (hitInfo.collider.CompareTag("Player"))
                     {
-                        Vector3 dir = (playerPos - firePoint.position).normalized;
-                        dir = Quaternion.Euler(
-                            Random.Range(-currentSpray, currentSpray),
-                            Random.Range(-currentSpray, currentSpray),
-                            0f
-                        ) * dir;
-
-                        float angle = Vector3.Angle(transform.forward, dir);
-                        if (angle < fireAngleLimit)
+                        if (fireCooldown <= 0f)
                         {
-                            Instantiate(bulletPrefab, firePoint.position, Quaternion.LookRotation(dir));
-                            currentSpray = Mathf.Clamp(currentSpray + sprayIncreasePerShot, 0f, maxSpray);
-                            fireTimer = 0f;
-                            nextFireTime = Random.Range(minFireDelay, maxFireDelay);
+                            fireCooldown = fireRate;
 
-                            if (animator)
-                                animator.SetTrigger("fire");
+                            if (shotCount < maxShotsBeforePause)
+                            {
+                                Shoot(hitInfo.point);
+                                shotCount++;
+                            }
+                            else
+                            {
+                                StartCoroutine(PauseBeforeNextFire());
+                            }
                         }
+
+                        return;
                     }
                 }
             }
+
+            if (distance > distanceToStop)
+            {
+                agent.SetDestination(target.position);
+            }
+            else
+            {
+                agent.SetDestination(transform.position);
+            }
+            GameManager.instance.AddKill(10);
         }
 
-        private void OnDrawGizmos()
+        private void Shoot(Vector3 targetPoint)
         {
-            // Vérification visuelle de la direction de tir et de la portée maximale
+            if (shootSound && audioSource)
+                audioSource.PlayOneShot(shootSound);
+            // 🔸 Ajout du spray (variation aléatoire de direction)
+            Vector3 baseDirection = (targetPoint - firePoint.position).normalized;
+
+            Quaternion sprayRotation = Quaternion.Euler(
+                Random.Range(-sprayAngle, sprayAngle),
+                Random.Range(-sprayAngle, sprayAngle),
+                0f
+            );
+
+            Vector3 sprayedDirection = sprayRotation * baseDirection;
+
+            Instantiate(bullet, firePoint.position, Quaternion.LookRotation(sprayedDirection));
+        }
+
+        private IEnumerator PauseBeforeNextFire()
+        {
+            yield return new WaitForSeconds(2f);
+            shotCount = 0;
+        }
+
+        private void OnDrawGizmosSelected()
+        {
             if (firePoint != null && target != null)
             {
                 Gizmos.color = Color.red;
-                Gizmos.DrawRay(firePoint.position, (target.position - firePoint.position).normalized * maxShootingDistance);
+                Gizmos.DrawLine(firePoint.position, target.position);
             }
         }
+        
     }
 }
