@@ -133,7 +133,7 @@ MonoBehaviour:
   bulletSpeed: 75
   lifeTime: 5
   theRigidbody: {fileID: 6190817063450830331}
-  damage: 1
+  damage: 5
   damageEnemy: 1
   damagePlayer: 0
 --- !u!96 &5690991619619671839

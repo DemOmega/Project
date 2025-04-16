@@ -6,18 +6,10 @@ namespace Scenes.Script
     {
         
         public int currentHealth, maxHealth;
-        public AudioSource audioSource;
-        public AudioClip deathSound;
 
         void Start()
         {
             currentHealth = maxHealth;
-        }
-
-
-        void Update()
-        {
-        
         }
 
         public void DamageEnemy(int damage)
@@ -31,10 +23,13 @@ namespace Scenes.Script
         }
         void Die()
         {
-            if (deathSound && audioSource)
-                audioSource.PlayOneShot(deathSound);
             
-            Destroy(gameObject, deathSound.length);
+            if (GameManager.instance != null)
+            {
+                GameManager.instance.AddKill(10); // Gagne 10 points ici !
+            }
+
+            Destroy(gameObject);
         }
     }
 }

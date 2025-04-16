@@ -5,6 +5,8 @@ namespace Scenes.Script
     [RequireComponent(typeof(CharacterController))]
     public class PlayerMovement : MonoBehaviour
     {
+        
+        public bool canMove = true;
         [Header("Déplacement")]
         public float moveSpeed = 10f, gravityForce = 3f, jumpForce = 7f, sprintMultiplier = 1.5f;
         public float rotationSpeed = 200f;
@@ -31,32 +33,39 @@ namespace Scenes.Script
 
         private void Update()
         {
-            _isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, 0.3f, groundLayer, obstacleLayer);
-            if (_isGrounded && _velocity.y < 0)
-                _velocity.y = -2f;
+            
+            if (!canMove || UI.instance.pauseScreen.activeInHierarchy)
+                return;
+            
+            if (!UI.instance.pauseScreen.activeInHierarchy)
+            {
+                _isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, 0.3f, groundLayer, obstacleLayer);
+                if (_isGrounded && _velocity.y < 0)
+                    _velocity.y = -2f;
 
-            float speed = moveSpeed * (Input.GetKey(KeyCode.LeftShift) ? sprintMultiplier : 1f);
-            float moveX = Input.GetAxis("Horizontal");
-            float moveZ = Input.GetAxis("Vertical");
-            Vector3 move = (transform.right * moveX + transform.forward * moveZ) * speed;
-            _controller.Move(move * Time.deltaTime);
+                float speed = moveSpeed * (Input.GetKey(KeyCode.LeftShift) ? sprintMultiplier : 1f);
+                float moveX = Input.GetAxis("Horizontal");
+                float moveZ = Input.GetAxis("Vertical");
+                Vector3 move = (transform.right * moveX + transform.forward * moveZ) * speed;
+                _controller.Move(move * Time.deltaTime);
 
-            if (_isGrounded && Input.GetKeyDown(KeyCode.Space))
-                _velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y);
+                if (_isGrounded && Input.GetKeyDown(KeyCode.Space))
+                    _velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y);
 
-            _velocity.y += Physics.gravity.y * gravityForce * Time.deltaTime;
-            _controller.Move(_velocity * Time.deltaTime);
+                _velocity.y += Physics.gravity.y * gravityForce * Time.deltaTime;
+                _controller.Move(_velocity * Time.deltaTime);
 
-            float mouseX = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
-            float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
-            _horizontalRotation += mouseX;
-            _verticalRotation -= mouseY;
-            _verticalRotation = Mathf.Clamp(_verticalRotation, minYRotation, maxYRotation);
-            transform.localRotation = Quaternion.Euler(0, _horizontalRotation, 0);
-            head.transform.localRotation = Quaternion.Euler(_verticalRotation, 0, 0);
+                float mouseX = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
+                float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
+                _horizontalRotation += mouseX;
+                _verticalRotation -= mouseY;
+                _verticalRotation = Mathf.Clamp(_verticalRotation, minYRotation, maxYRotation);
+                transform.localRotation = Quaternion.Euler(0, _horizontalRotation, 0);
+                head.transform.localRotation = Quaternion.Euler(_verticalRotation, 0, 0);
 
-            animator.SetFloat("movespeed", move.magnitude);
-            animator.SetBool("onGround", _isGrounded);
+                animator.SetFloat("movespeed", move.magnitude);
+                animator.SetBool("onGround", _isGrounded);
+            }
         }
 
         private void OnDrawGizmos()

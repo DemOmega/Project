@@ -15,7 +15,8 @@ namespace Scenes.Script
 
         void Update()
         {
-           theRigidbody.linearVelocity = transform.forward * bulletSpeed;
+            theRigidbody.linearVelocity = transform.forward * bulletSpeed;
+
 
             lifeTime -= Time.deltaTime;
 
@@ -27,14 +28,15 @@ namespace Scenes.Script
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.CompareTag("Enemy") && damageEnemy)
+            if (damageEnemy && other.CompareTag("Enemy"))
             {
-                other.gameObject.GetComponent<EnnemyHealt>()?.DamageEnemy(damage);
-            }
-
-            if (other.gameObject.CompareTag("Player") && damagePlayer)
-            { 
-                PlayerHealt.instance?.DamagePlayer(damage);
+                EnnemyHealt enemy = other.GetComponent<EnnemyHealt>();
+                if (enemy != null)
+                {
+                    enemy.DamageEnemy(damage);
+                    if (HitmarkerManager.instance != null)
+                        HitmarkerManager.instance.ShowHitmarker();
+                }
             }
 
             Destroy(gameObject);

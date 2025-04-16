@@ -26,6 +26,9 @@ namespace Scenes.Script
         public AudioSource audioSource;
         public AudioClip shootSound;
         public AudioClip reloadSound;
+        
+        public GameObject muzzleFlash;
+
 
         private void Start()
         {
@@ -34,6 +37,8 @@ namespace Scenes.Script
 
         private void Update()
         {
+            if (!canShoot || isReloading) return;
+
             fireCooldown -= Time.deltaTime;
             currentSpray = Mathf.MoveTowards(currentSpray, 0f, sprayRecovery * Time.deltaTime);
 
@@ -64,9 +69,15 @@ namespace Scenes.Script
             ) * direction;
 
             Instantiate(bullet, firePoint.position, Quaternion.LookRotation(direction));
-
+            
             if (shootSound && audioSource)
                 audioSource.PlayOneShot(shootSound);
+
+            
+            if (muzzleFlash != null)
+            {
+                StartCoroutine(ShowMuzzleFlash());
+            }
 
             currentSpray = Mathf.Clamp(currentSpray + sprayIncreasePerShot, 0f, maxSpray);
         }
@@ -81,6 +92,13 @@ namespace Scenes.Script
 
             currentAmmo = maxAmmo;
             isReloading = false;
+        }
+        
+        System.Collections.IEnumerator ShowMuzzleFlash()
+        {
+            muzzleFlash.SetActive(true);
+            yield return new WaitForSeconds(0.05f);
+            muzzleFlash.SetActive(false);
         }
     }
 }

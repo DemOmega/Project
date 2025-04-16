@@ -20,14 +20,23 @@ namespace Scenes.Script
         public AudioSource audioSource;
         public AudioClip shootSound;
         public AudioClip reloadSound;
+        
+        public GameObject muzzleFlash;
+   
 
         private void Start()
         {
             currentAmmo = maxAmmo;
+            canShoot = true;
+
         }
 
         private void Update()
         {
+            if (!canShoot || isReloading) return;
+            Debug.Log("canShoot: " + canShoot + ", isReloading: " + isReloading);
+
+
             fireCooldown -= Time.deltaTime;
 
             if (!isReloading)
@@ -53,8 +62,15 @@ namespace Scenes.Script
 
             Instantiate(bullet, firePoint.position, Quaternion.LookRotation(direction));
 
+            // 🔊 Son du tir
             if (shootSound && audioSource)
                 audioSource.PlayOneShot(shootSound);
+
+            // ✨ Affiche le muzzle flash
+            if (muzzleFlash != null)
+            {
+                StartCoroutine(ShowMuzzleFlash());
+            }
         }
 
         System.Collections.IEnumerator Reload()
@@ -67,6 +83,13 @@ namespace Scenes.Script
 
             currentAmmo = maxAmmo;
             isReloading = false;
+        }
+        
+        System.Collections.IEnumerator ShowMuzzleFlash()
+        {
+            muzzleFlash.SetActive(true);
+            yield return new WaitForSeconds(0.05f);
+            muzzleFlash.SetActive(false);
         }
     }
 }

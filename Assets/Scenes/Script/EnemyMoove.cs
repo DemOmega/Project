@@ -1,34 +1,24 @@
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 
 namespace Scenes.Script
 {
     public class EnemyMoove : MonoBehaviour
-    
     {
         [Header("Audio")]
         public AudioSource audioSource;
-        public AudioClip shootSound;
         public AudioClip deathSound;
-        
+
         [Header("Déplacement")]
         public float distanceToStop = 10f;
+        public float attackRange = 2f;         // Distance d'attaque
+        public int attackDamage = 10;          // Dégâts infligés
+        public float attackCooldown = 1f;      // Temps entre deux attaques
 
-        [Header("Tir")]
-        public GameObject bullet;
-        public Transform firePoint;
-        public float fireRate = 0.15f;
-        public float shootingDistance = 30f;
-        public LayerMask visionMask;
-        public LayerMask obstacleMask;
-        public int maxShotsBeforePause = 30;
-        public float sprayAngle = 3f; // 🔸Ajout: angle de dispersion
-
-        private int shotCount = 0;
-        private float fireCooldown = 0f;
+        private float attackTimer = 0f;
         private Transform target;
         private NavMeshAgent agent;
+        private PlayerHealt playerHealth;      // Référence au script santé du joueur
 
         private void Start()
         {
@@ -36,12 +26,18 @@ namespace Scenes.Script
 
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
+            {
                 target = player.transform;
+                playerHealth = player.GetComponent<PlayerHealt>();
+                if (playerHealth == null)
+                {
+                    Debug.LogError("Le script 'PlayerHealt' est manquant sur le joueur !");
+                }
+            }
             else
+            {
                 Debug.LogError("Joueur non trouvé (tag 'Player')");
-
-            if (firePoint == null)
-                Debug.LogError("FirePoint non assigné !");
+            }
         }
 
         private void Update()
@@ -49,43 +45,20 @@ namespace Scenes.Script
             if (target == null || agent == null) return;
 
             float distance = Vector3.Distance(transform.position, target.position);
-
             Vector3 direction = (target.position - transform.position).normalized;
             direction.y = 0f;
             transform.forward = direction;
 
-            fireCooldown -= Time.deltaTime;
-
-            Vector3 dirToPlayer = (target.position - firePoint.position).normalized;
-            float distanceToPlayer = Vector3.Distance(firePoint.position, target.position);
-
-            if (!Physics.Raycast(firePoint.position, dirToPlayer, distanceToPlayer, obstacleMask))
+            // Attaque si dans la portée
+            if (distance <= attackRange)
             {
-                if (Physics.Raycast(firePoint.position, dirToPlayer, out RaycastHit hitInfo, shootingDistance, visionMask))
+                if (attackTimer <= 0f)
                 {
-                    if (hitInfo.collider.CompareTag("Player"))
-                    {
-                        if (fireCooldown <= 0f)
-                        {
-                            fireCooldown = fireRate;
-
-                            if (shotCount < maxShotsBeforePause)
-                            {
-                                Shoot(hitInfo.point);
-                                shotCount++;
-                            }
-                            else
-                            {
-                                StartCoroutine(PauseBeforeNextFire());
-                            }
-                        }
-
-                        return;
-                    }
+                    Attack();
+                    attackTimer = attackCooldown;
                 }
             }
-
-            if (distance > distanceToStop)
+            else if (distance > distanceToStop)
             {
                 agent.SetDestination(target.position);
             }
@@ -93,41 +66,27 @@ namespace Scenes.Script
             {
                 agent.SetDestination(transform.position);
             }
-            GameManager.instance.AddKill(10);
+
+            attackTimer -= Time.deltaTime;
         }
 
-        private void Shoot(Vector3 targetPoint)
+        private void Attack()
         {
-            if (shootSound && audioSource)
-                audioSource.PlayOneShot(shootSound);
-            // 🔸 Ajout du spray (variation aléatoire de direction)
-            Vector3 baseDirection = (targetPoint - firePoint.position).normalized;
+            if (playerHealth != null && Vector3.Distance(transform.position, target.position) <= attackRange)
+            {
+                playerHealth.DamagePlayer(attackDamage);
 
-            Quaternion sprayRotation = Quaternion.Euler(
-                Random.Range(-sprayAngle, sprayAngle),
-                Random.Range(-sprayAngle, sprayAngle),
-                0f
-            );
-
-            Vector3 sprayedDirection = sprayRotation * baseDirection;
-
-            Instantiate(bullet, firePoint.position, Quaternion.LookRotation(sprayedDirection));
-        }
-
-        private IEnumerator PauseBeforeNextFire()
-        {
-            yield return new WaitForSeconds(2f);
-            shotCount = 0;
+                if (audioSource && deathSound)
+                {
+                    audioSource.PlayOneShot(deathSound);
+                }
+            }
         }
 
         private void OnDrawGizmosSelected()
         {
-            if (firePoint != null && target != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(firePoint.position, target.position);
-            }
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, attackRange);
         }
-        
     }
 }

@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Scenes.Script
 {
@@ -8,6 +10,13 @@ namespace Scenes.Script
         public static PlayerHealt instance;
         
         public int maxHealt, currentHealt;
+        
+        public AudioSource audioSource;
+        public AudioClip hurtClip;
+
+        public float timeUntilFinalScreen = 1f;
+
+        public string finalScreenScene;
 
         private void Awake()
         {
@@ -30,10 +39,17 @@ namespace Scenes.Script
         {
             currentHealt -= damage;
 
+            UI.instance.ShowDamage();
+            
+            if (hurtClip != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(hurtClip);
+            }
+
             if (currentHealt <= 0)
             {
-                gameObject.SetActive(false);
-                GameManager.instance.GameOver();
+                currentHealt = 0;
+                StartCoroutine(WaitingForFinalScreen());
             }
             
             UI.instance.healthSlider.value = currentHealt;
@@ -45,7 +61,19 @@ namespace Scenes.Script
             if (currentHealt >= maxHealt) return false;
 
             currentHealt = Mathf.Min(currentHealt + amount, maxHealt);
+            UI.instance.healthSlider.value = currentHealt;
+            UI.instance.healthText.text = currentHealt + "/" + maxHealt;
             return true;
+            
+        }
+
+        public IEnumerator WaitingForFinalScreen()
+        {
+            yield return new WaitForSeconds(timeUntilFinalScreen);
+            
+            SceneManager.LoadScene(finalScreenScene);
+
+            Cursor.lockState = CursorLockMode.None;
         }
     }
 }
