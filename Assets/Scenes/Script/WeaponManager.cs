@@ -7,6 +7,7 @@ namespace Scenes.Script
     {
         public List<GameObject> weapons = new List<GameObject>(); // Liste dynamique des armes
         private int currentWeaponIndex = 0;
+        public bool canMove = true;
 
         private void Start()
         {
@@ -15,30 +16,37 @@ namespace Scenes.Script
 
         private void Update()
         {
-            // Changement d'arme avec touches 1, 2, etc.
-            for (int i = 0; i < weapons.Count; i++)
+            if (!canMove || UI.instance.pauseScreen.activeInHierarchy)
+                return;
+
+            if (!UI.instance.pauseScreen.activeInHierarchy)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+                // Changement d'arme avec touches 1, 2, etc.
+                for (int i = 0; i < weapons.Count; i++)
                 {
-                    currentWeaponIndex = i;
+                    if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+                    {
+                        currentWeaponIndex = i;
+                        UpdateWeapon();
+                    }
+                }
+
+                // Changement d'arme avec la molette de la souris
+                float scroll = Input.GetAxis("Mouse ScrollWheel");
+                if (scroll > 0f) // Molette vers le haut
+                {
+                    currentWeaponIndex = (currentWeaponIndex + 1) % weapons.Count;
+                    UpdateWeapon();
+                }
+                else if (scroll < 0f) // Molette vers le bas
+                {
+                    currentWeaponIndex--;
+                    if (currentWeaponIndex < 0) currentWeaponIndex = weapons.Count - 1;
                     UpdateWeapon();
                 }
             }
-
-            // Changement d'arme avec la molette de la souris
-            float scroll = Input.GetAxis("Mouse ScrollWheel");
-            if (scroll > 0f) // Molette vers le haut
-            {
-                currentWeaponIndex = (currentWeaponIndex + 1) % weapons.Count;
-                UpdateWeapon();
-            }
-            else if (scroll < 0f) // Molette vers le bas
-            {
-                currentWeaponIndex--;
-                if (currentWeaponIndex < 0) currentWeaponIndex = weapons.Count - 1;
-                UpdateWeapon();
-            }
         }
+        
 
         private void UpdateWeapon()
         {

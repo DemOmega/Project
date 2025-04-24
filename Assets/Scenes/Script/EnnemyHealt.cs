@@ -23,12 +23,6 @@ namespace Scenes.Script
         }
         void Die()
         {
-            
-            if (GameManager.instance != null)
-            {
-                GameManager.instance.AddKill(10); // Gagne 10 points ici !
-            }
-
             Destroy(gameObject);
         }
     }

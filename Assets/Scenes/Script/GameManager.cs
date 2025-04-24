@@ -7,14 +7,12 @@ namespace Scenes.Script
     {
         public static GameManager instance;
 
-        public int score = 0;
-        public int kills = 0;
+        public GameObject pauseMenuUI;
+        private bool isPaused;
+        
         private float startTime;
         public bool isGameOver = false;
-
-        // Variables statiques accessibles depuis la scène GameOver
-        public static int finalScore;
-        public static int finalKills;
+        
         public static float finalTime;
 
         void Awake()
@@ -30,56 +28,83 @@ namespace Scenes.Script
             }
         }
 
-        private void Start()
+        void Start()
         {
-            Cursor.lockState =CursorLockMode.Locked; 
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
             startTime = Time.time;
         }
 
-        private void Update()
+        void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape) && !isGameOver)
             {
-                PauseUnpause();
+                TogglePause();
             }
         }
 
-        public void AddKill(int points)
+        public void TogglePause()
         {
-            score += points;
-            kills++;
+            isPaused = !isPaused;
+
+            pauseMenuUI.SetActive(isPaused);
+            Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = isPaused;
+            Time.timeScale = isPaused ? 0f : 1f;
+
+            SetGameplayEnabled(!isPaused);
+        }
+
+        public void ResumeGame()
+        {
+            isPaused = false;
+            pauseMenuUI.SetActive(false);
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            Time.timeScale = 1f;
+
+            SetGameplayEnabled(true);
+        }
+
+        public void LoadMainMenu(string menuSceneName)
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(menuSceneName);
+        }
+
+        public void QuitGame()
+        {
+            Application.Quit();
         }
 
         public void GameOver()
         {
-            isGameOver = true;
+            if (isGameOver) return;
 
-            // Sauvegarde des infos finales
-            finalScore = score;
-            finalKills = kills;
+            isGameOver = true;
             finalTime = Time.time - startTime;
 
-            // Chargement de la scène FinalScren (jai chié sur le "e")
+        
+            Debug.Log("Final Time: " + finalTime);
+
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
             SceneManager.LoadScene("FinalScren");
-            
         }
 
-        public void PauseUnpause()
+        public void SetGameplayEnabled(bool enabled)
         {
-            if (UI.instance.pauseScreen.activeInHierarchy)
-            {
-                UI.instance.pauseScreen.SetActive(false);
-                Cursor.lockState = CursorLockMode.Locked;
-                Time.timeScale = 1f;
-            }
-            else
-            {
-                UI.instance.pauseScreen.SetActive(true);
+            // Bloque toutes les armes
+            BaseWeapon[] weapons = FindObjectsOfType<BaseWeapon>();
+            foreach (var weapon in weapons)
+                weapon.canShoot = enabled;
 
-                Cursor.lockState = CursorLockMode.None;
-                
-                Time.timeScale = 0f;
-            }
+            // Bloque les mouvements du joueur
+            PlayerMovement movement = FindObjectOfType<PlayerMovement>();
+            if (movement != null)
+                movement.canMove = enabled;
         }
     }
 }
