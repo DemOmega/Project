@@ -11,7 +11,7 @@ namespace Scenes.Script
         private bool isPaused;
         
         private float startTime;
-        public bool isGameOver = false;
+        private bool isGameOver = false;
         
         public static float finalTime;
 
@@ -50,6 +50,8 @@ namespace Scenes.Script
             pauseMenuUI.SetActive(isPaused);
             Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = isPaused;
+            Debug.Log("Pause: " + isPaused + " | Curseur visible: " + Cursor.visible);
+
             Time.timeScale = isPaused ? 0f : 1f;
 
             SetGameplayEnabled(!isPaused);
@@ -66,10 +68,10 @@ namespace Scenes.Script
             SetGameplayEnabled(true);
         }
 
-        public void LoadMainMenu(string menuSceneName)
+        public void LoadMainMenu(string MainMenu)
         {
             Time.timeScale = 1f;
-            SceneManager.LoadScene(menuSceneName);
+            SceneManager.LoadScene(MainMenu);
         }
 
         public void QuitGame()
