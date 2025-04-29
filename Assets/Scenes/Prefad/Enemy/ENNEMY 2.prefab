@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 6215988836462034942}
   - component: {fileID: 8360841435263579531}
   m_Layer: 0
-  m_Name: Enemy
+  m_Name: ENNEMY 2
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -71,7 +71,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: fdf9414de1cd0144293ca850825e0445, type: 2}
+  - {fileID: 2100000, guid: a598b9420a4bd8b4f875e49f35cfe2a5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -128,8 +128,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96fd2314947dd2a4891eb2f816ae7d5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHealth: 15
-  maxHealth: 15
+  currentHealth: 5
+  maxHealth: 5
 --- !u!114 &5810538761568616463
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,7 +146,7 @@ MonoBehaviour:
   deathSound: {fileID: 8300000, guid: 7e24432fc9fbe0f43b52b7c1ee9e056d, type: 3}
   distanceToStop: 3
   attackRange: 3
-  attackDamage: 5
+  attackDamage: 1
   attackCooldown: 1.5
 --- !u!54 &6215988836462034942
 Rigidbody:
@@ -185,7 +185,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 8
+  m_Speed: 13
   m_Acceleration: 10
   avoidancePriority: 50
   m_AngularSpeed: 120

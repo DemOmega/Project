@@ -5,68 +5,78 @@ namespace Scenes.Script
 {
     public class WeaponManager : MonoBehaviour
     {
-        public List<GameObject> weapons = new List<GameObject>(); // Liste dynamique des armes
+        public List<GameObject> weapons = new();
         private int currentWeaponIndex = 0;
         public bool canMove = true;
 
+        private BaseWeapon currentWeapon;
+
         private void Start()
         {
-            UpdateWeapon();
+            if (weapons.Count > 0)
+                UpdateWeapon();
         }
 
         private void Update()
         {
-            if (!canMove || UI.instance.pauseScreen.activeInHierarchy)
+            if (!canMove || UI.instance.pauseScreen.activeInHierarchy || weapons.Count == 0)
                 return;
 
-            if (!UI.instance.pauseScreen.activeInHierarchy)
-            {
-                // Changement d'arme avec touches 1, 2, etc.
-                for (int i = 0; i < weapons.Count; i++)
-                {
-                    if (Input.GetKeyDown(KeyCode.Alpha1 + i))
-                    {
-                        currentWeaponIndex = i;
-                        UpdateWeapon();
-                    }
-                }
+            HandleWeaponSwitchInput();
+        }
 
-                // Changement d'arme avec la molette de la souris
-                float scroll = Input.GetAxis("Mouse ScrollWheel");
-                if (scroll > 0f) // Molette vers le haut
+        private void HandleWeaponSwitchInput()
+        {
+            bool switched = false;
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+
+            if (scroll > 0f)
+            {
+                currentWeaponIndex = (currentWeaponIndex + 1) % weapons.Count;
+                switched = true;
+            }
+            else if (scroll < 0f)
+            {
+                currentWeaponIndex--;
+                if (currentWeaponIndex < 0) currentWeaponIndex = weapons.Count - 1;
+                switched = true;
+            }
+
+            for (int i = 0; i < weapons.Count; i++)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                 {
-                    currentWeaponIndex = (currentWeaponIndex + 1) % weapons.Count;
-                    UpdateWeapon();
-                }
-                else if (scroll < 0f) // Molette vers le bas
-                {
-                    currentWeaponIndex--;
-                    if (currentWeaponIndex < 0) currentWeaponIndex = weapons.Count - 1;
-                    UpdateWeapon();
+                    currentWeaponIndex = i;
+                    switched = true;
                 }
             }
+
+            if (switched)
+                UpdateWeapon();
         }
-        
 
         private void UpdateWeapon()
         {
+            if (currentWeapon != null)
+                currentWeapon.CancelReload();
+
             for (int i = 0; i < weapons.Count; i++)
-            {
                 weapons[i].SetActive(i == currentWeaponIndex);
-            }
+
+            currentWeapon = weapons[currentWeaponIndex].GetComponent<BaseWeapon>();
+            currentWeapon.canShoot = true;
         }
 
-        // Fonction pour ajouter une arme dynamiquement
         public void AddWeapon(GameObject newWeapon)
         {
             weapons.Add(newWeapon);
             currentWeaponIndex = weapons.Count - 1;
             UpdateWeapon();
         }
-        
+
         public BaseWeapon GetCurrentWeapon()
         {
-            return weapons[currentWeaponIndex].GetComponent<BaseWeapon>();
+            return currentWeapon;
         }
     }
 }

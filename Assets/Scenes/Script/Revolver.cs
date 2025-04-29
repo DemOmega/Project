@@ -1,12 +1,10 @@
 using UnityEngine;
+using System.Collections;
 
 namespace Scenes.Script
 {
     public class Revolver : BaseWeapon
     {
-        
-        public override int GetCurrentAmmo() => currentAmmo;
-        public override int GetMaxAmmo() => maxAmmo;
         public GameObject bullet;
         public Transform firePoint;
         public float fireRate = 0.5f;
@@ -16,26 +14,33 @@ namespace Scenes.Script
         private int currentAmmo;
         private bool isReloading = false;
         public float reloadTime = 1.5f;
+        private Coroutine reloadCoroutine;
 
         public AudioSource audioSource;
         public AudioClip shootSound;
         public AudioClip reloadSound;
-        
+
         public GameObject muzzleFlash;
-   
 
-        private void Start()
+        private void OnEnable()
         {
-            currentAmmo = maxAmmo;
-            canShoot = true;
+            // Initialisation des munitions si l'arme est activée
+            if (currentAmmo <= 0)
+                currentAmmo = maxAmmo;
 
+            canShoot = true;
+            isReloading = false;
+        }
+
+        private void OnDisable()
+        {
+            CancelReload();
+            canShoot = false;
         }
 
         private void Update()
         {
             if (!canShoot || isReloading) return;
-            Debug.Log("canShoot: " + canShoot + ", isReloading: " + isReloading);
-
 
             fireCooldown -= Time.deltaTime;
 
@@ -44,8 +49,8 @@ namespace Scenes.Script
                 if (Input.GetButtonDown("Fire1") && fireCooldown <= 0f && currentAmmo > 0)
                     Shoot();
 
-                if (Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo)
-                    StartCoroutine(Reload());
+                if (Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo && !isReloading)
+                    reloadCoroutine = StartCoroutine(Reload());
             }
         }
 
@@ -62,20 +67,22 @@ namespace Scenes.Script
 
             Instantiate(bullet, firePoint.position, Quaternion.LookRotation(direction));
 
-            // 🔊 Son du tir
+            
             if (shootSound && audioSource)
                 audioSource.PlayOneShot(shootSound);
 
-            // ✨ Affiche le muzzle flash
+            
             if (muzzleFlash != null)
             {
                 StartCoroutine(ShowMuzzleFlash());
             }
         }
 
-        System.Collections.IEnumerator Reload()
+        IEnumerator Reload()
         {
             isReloading = true;
+            canShoot = false;
+
             if (reloadSound && audioSource)
                 audioSource.PlayOneShot(reloadSound);
 
@@ -83,13 +90,28 @@ namespace Scenes.Script
 
             currentAmmo = maxAmmo;
             isReloading = false;
+            canShoot = true;
         }
-        
-        System.Collections.IEnumerator ShowMuzzleFlash()
+
+        IEnumerator ShowMuzzleFlash()
         {
             muzzleFlash.SetActive(true);
             yield return new WaitForSeconds(0.05f);
             muzzleFlash.SetActive(false);
         }
+
+        public override void CancelReload()
+        {
+            if (isReloading && reloadCoroutine != null)
+            {
+                StopCoroutine(reloadCoroutine);
+                reloadCoroutine = null;
+                isReloading = false;
+                canShoot = true;
+            }
+        }
+
+        public override int GetCurrentAmmo() => currentAmmo;
+        public override int GetMaxAmmo() => maxAmmo;
     }
 }

@@ -22,7 +22,7 @@ namespace Scenes.Script
             weapon = FindFirstObjectByType<BaseWeapon>();
 
             if (playerMovement != null) playerMovement.canMove = false;
-            if (weapon != null) weapon.canShoot = true;
+            if (weapon != null) weapon.canShoot = false;
 
             StartCoroutine(StartCountdown());
         }

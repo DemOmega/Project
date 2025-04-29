@@ -1,12 +1,10 @@
 using UnityEngine;
+using System.Collections;
 
 namespace Scenes.Script
 {
     public class Rifle : BaseWeapon
     {
-        
-        public override int GetCurrentAmmo() => currentAmmo;
-        public override int GetMaxAmmo() => maxAmmo;
         public GameObject bullet;
         public Transform firePoint;
         public float fireRate = 0.1f;
@@ -16,6 +14,7 @@ namespace Scenes.Script
         private int currentAmmo;
         private bool isReloading = false;
         public float reloadTime = 2f;
+        private Coroutine reloadCoroutine;
 
         public float sprayAmount = 2f;
         public float sprayIncreasePerShot = 0.5f;
@@ -26,13 +25,23 @@ namespace Scenes.Script
         public AudioSource audioSource;
         public AudioClip shootSound;
         public AudioClip reloadSound;
-        
+
         public GameObject muzzleFlash;
 
-
-        private void Start()
+        private void OnEnable()
         {
-            currentAmmo = maxAmmo;
+            // Initialisation ammo même si Start() n'est pas appelé
+            if (currentAmmo <= 0)
+                currentAmmo = maxAmmo;
+
+            canShoot = true;
+            isReloading = false;
+        }
+
+        private void OnDisable()
+        {
+            CancelReload();
+            canShoot = false;
         }
 
         private void Update()
@@ -42,14 +51,11 @@ namespace Scenes.Script
             fireCooldown -= Time.deltaTime;
             currentSpray = Mathf.MoveTowards(currentSpray, 0f, sprayRecovery * Time.deltaTime);
 
-            if (!isReloading)
-            {
-                if (Input.GetButton("Fire1") && fireCooldown <= 0f && currentAmmo > 0)
-                    Shoot();
+            if (Input.GetButton("Fire1") && fireCooldown <= 0f && currentAmmo > 0)
+                Shoot();
 
-                if (Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo)
-                    StartCoroutine(Reload());
-            }
+            if (Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo && !isReloading)
+                reloadCoroutine = StartCoroutine(Reload());
         }
 
         void Shoot()
@@ -69,22 +75,21 @@ namespace Scenes.Script
             ) * direction;
 
             Instantiate(bullet, firePoint.position, Quaternion.LookRotation(direction));
-            
+
             if (shootSound && audioSource)
                 audioSource.PlayOneShot(shootSound);
 
-            
-            if (muzzleFlash != null)
-            {
+            if (muzzleFlash)
                 StartCoroutine(ShowMuzzleFlash());
-            }
 
             currentSpray = Mathf.Clamp(currentSpray + sprayIncreasePerShot, 0f, maxSpray);
         }
 
-        System.Collections.IEnumerator Reload()
+        IEnumerator Reload()
         {
             isReloading = true;
+            canShoot = false;
+
             if (reloadSound && audioSource)
                 audioSource.PlayOneShot(reloadSound);
 
@@ -92,13 +97,28 @@ namespace Scenes.Script
 
             currentAmmo = maxAmmo;
             isReloading = false;
+            canShoot = true;
         }
-        
-        System.Collections.IEnumerator ShowMuzzleFlash()
+
+        IEnumerator ShowMuzzleFlash()
         {
             muzzleFlash.SetActive(true);
             yield return new WaitForSeconds(0.05f);
             muzzleFlash.SetActive(false);
         }
+
+        public override void CancelReload()
+        {
+            if (isReloading && reloadCoroutine != null)
+            {
+                StopCoroutine(reloadCoroutine);
+                reloadCoroutine = null;
+                isReloading = false;
+                canShoot = true;
+            }
+        }
+
+        public override int GetCurrentAmmo() => currentAmmo;
+        public override int GetMaxAmmo() => maxAmmo;
     }
 }

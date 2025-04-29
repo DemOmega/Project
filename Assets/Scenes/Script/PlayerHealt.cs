@@ -30,10 +30,7 @@ namespace Scenes.Script
             UI.instance.healthSlider.value = currentHealt;
             UI.instance.healthText.text = "HEALTH"+ currentHealt + "/" + maxHealt;
         }
-
-        private void Update()
-        {
-        }
+        
 
         public void DamagePlayer(int damage)
         {
