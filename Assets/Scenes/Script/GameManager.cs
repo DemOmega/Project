@@ -9,10 +9,10 @@ namespace Scenes.Script
 
         public GameObject pauseMenuUI;
         private bool isPaused;
-        
+
         private float startTime;
         private bool isGameOver = false;
-        
+
         public static float finalTime;
 
         void Awake()
@@ -21,6 +21,7 @@ namespace Scenes.Script
             {
                 instance = this;
                 DontDestroyOnLoad(gameObject);
+                SceneManager.sceneLoaded += OnSceneLoaded;
             }
             else
             {
@@ -33,6 +34,8 @@ namespace Scenes.Script
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             startTime = Time.time;
+
+            TryFindPauseMenu();
         }
 
         void Update()
@@ -47,11 +50,13 @@ namespace Scenes.Script
         {
             isPaused = !isPaused;
 
-            pauseMenuUI.SetActive(isPaused);
+            if (pauseMenuUI != null)
+                pauseMenuUI.SetActive(isPaused);
+            else
+                Debug.LogWarning("IL EST OU ?");
+
             Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = isPaused;
-            Debug.Log("Pause: " + isPaused + " | Curseur visible: " + Cursor.visible);
-
             Time.timeScale = isPaused ? 0f : 1f;
 
             SetGameplayEnabled(!isPaused);
@@ -60,7 +65,10 @@ namespace Scenes.Script
         public void ResumeGame()
         {
             isPaused = false;
-            pauseMenuUI.SetActive(false);
+
+            if (pauseMenuUI != null)
+                pauseMenuUI.SetActive(false);
+
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             Time.timeScale = 1f;
@@ -68,10 +76,10 @@ namespace Scenes.Script
             SetGameplayEnabled(true);
         }
 
-        public void LoadMainMenu(string MainMenu)
+        public void LoadMainMenu(string mainMenuSceneName)
         {
             Time.timeScale = 1f;
-            SceneManager.LoadScene(MainMenu);
+            SceneManager.LoadScene(mainMenuSceneName);
         }
 
         public void QuitGame()
@@ -86,7 +94,6 @@ namespace Scenes.Script
             isGameOver = true;
             finalTime = Time.time - startTime;
 
-        
             Debug.Log("Final Time: " + finalTime);
 
             Time.timeScale = 1f;
@@ -98,15 +105,33 @@ namespace Scenes.Script
 
         public void SetGameplayEnabled(bool enabled)
         {
-            // Bloque toutes les armes
             BaseWeapon[] weapons = FindObjectsOfType<BaseWeapon>();
             foreach (var weapon in weapons)
                 weapon.canShoot = enabled;
 
-            // Bloque les mouvements du joueur
             PlayerMovement movement = FindObjectOfType<PlayerMovement>();
             if (movement != null)
                 movement.canMove = enabled;
+        }
+
+        private void TryFindPauseMenu()
+        {
+            if (pauseMenuUI == null)
+            {
+                pauseMenuUI = GameObject.FindWithTag("PauseMenu");
+                if (pauseMenuUI == null)
+                    Debug.LogWarning(" IL EST OU ?? ");
+            }
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            TryFindPauseMenu();
+        }
+
+        private void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
         }
     }
 }

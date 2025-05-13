@@ -144,10 +144,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSource: {fileID: 0}
   deathSound: {fileID: 8300000, guid: 7e24432fc9fbe0f43b52b7c1ee9e056d, type: 3}
-  distanceToStop: 3
-  attackRange: 3
+  distanceToStop: 2
+  attackRange: 2
   attackDamage: 1
-  attackCooldown: 1.5
+  attackCooldown: 2
 --- !u!54 &6215988836462034942
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -185,7 +185,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 13
+  m_Speed: 7
   m_Acceleration: 10
   avoidancePriority: 50
   m_AngularSpeed: 120
