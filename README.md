@@ -1,8 +1,8 @@
-# 🧟 Zombie Survival FPS
+# 🧟 FPSSHOOTER
 
 ## 🎮 Présentation
 
-**Zombie Survival FPS** est un jeu de tir à la première personne (FPS) développé sous **Unity**, où le joueur doit survivre à une invasion incessante de zombies. Le but du jeu est de **tenir le plus longtemps possible** face à des vagues de morts-vivants, en utilisant différentes armes et en gérant sa santé.
+**FPSSHOOTER** est un jeu de tir à la première personne (FPS) développé sous **Unity**, où le joueur doit survivre à une invasion incessante de zombies. Le but du jeu est de **tenir le plus longtemps possible** face à des vagues de morts-vivants, en utilisant différentes armes et en gérant sa santé.
 
 ---
 
@@ -44,14 +44,12 @@ Deux types de zombies peuplent le champ de bataille :
 
 ---
 
-## ✅ Fonctionnalités prévues
+## Fonctionnalités prévues
 
-- ✅ IA ennemie avec navigation (NavMesh)
-- ✅ Système de spawn par vagues
-- ✅ HUD dynamique (vie, munitions, vague actuelle)
-- ✅ Changement d’armes fluide
-- 🔜 Système de score et leaderboard
-- 🔜 Modes de difficulté
+-  IA ennemie avec navigation
+-  Système de spawn
+-  HUD dynamique (vie, munitions)
+-  Changement d’armes fluide
 
 ---
 
@@ -63,10 +61,7 @@ Deux types de zombies peuplent le champ de bataille :
 
 ## 🚀 Lancer le jeu
 
-1. Cloner le dépôt :
-   ```bash
-   git clone https://github.com/ton-profil/zombie-survival-fps.git
-   ```
+1. Extrait le zip. 
 2. Ouvrir le projet dans Unity.
 3. Lancer la scène principale (`MainScene.unity`).
 4. Appuyer sur **Play** pour commencer.
