@@ -1,69 +1,73 @@
 # 🧟 FPSSHOOTER
 
-## 🎮 Présentation
+## 🎮 Presentation
 
-**FPSSHOOTER** est un jeu de tir à la première personne (FPS) développé sous **Unity**, où le joueur doit survivre à une invasion incessante de zombies. Le but du jeu est de **tenir le plus longtemps possible** face à des vagues de morts-vivants, en utilisant différentes armes et en gérant sa santé.
-
----
-
-## 🧟‍♂️ Ennemis
-
-Deux types de zombies peuplent le champ de bataille :
-
-- **Zombie Rapide**
-  - Vitesse élevée 🏃‍♂️
-  - Faible résistance 💀
-
-- **Zombie Résistant**
-  - Lent mais robuste 🐌
-  - Haute résistance 🧱
+***FPSSHOOTER** is a first-person shooter (FPS) developed under **Unity**, where the player must survive an incessant invasion of zombies. The goal of the game is to **stand as long as possible** against waves of undead, using different weapons and managing your health.
 
 ---
 
-## 🔫 Système d'Armes
+## 🧟‍♂️ Enemies
 
-- Le joueur peut **changer d'arme** à tout moment via un système de sélection (ex : molette souris ou touches clavier).
-- Chaque arme a des caractéristiques différentes : **dégâts**, **cadence de tir**, **portée**, etc.
-- Le système permet d'ajouter facilement de nouvelles armes.
+Two types of zombies populate the battlefield:
 
----
+- **Fast Zombie**
+  - High speed 🏃‍♂️
+  - Low resistance 💀
 
-## ❤️ Régénération de Vie
-
-- Le joueur peut retrouver de la santé via :
-  - Des **packs de soin** disséminés sur la carte.
-  - Un **système de récupération automatique** limitée dans le temps (optionnel selon difficulté).
+- **Zombie Resistant**
+  - Slow but robust 🐌
+  - High strength 🧱
 
 ---
 
-## 🛠️ Développement
+## 🔫 Weapons System
 
-- **Moteur de jeu :** Unity (version recommandée : 2021.3 ou plus)
-- **Langage :** C#
-- **Multiplateforme :** PC (Windows) - autres plateformes à venir
-
----
-
-## Fonctionnalités prévues
-
--  IA ennemie avec navigation
--  Système de spawn
--  HUD dynamique (vie, munitions)
--  Changement d’armes fluide
+- The player can **change weapons** at any time via a selection system (e.g., mouse wheel or keyboard keys).
+- Each weapon has different characteristics: **damage**, **rate of fire**, **range**, etc.
+- The system makes it easy to add new weapons.
 
 ---
 
-## 📸 Captures d'écran
+## ❤️ Life Regeneration
 
-*(Ajoute ici des captures du jeu une fois disponibles)*
+- The player can regain health via:
+  - Some **care packs** scattered across the map.
+  - A **automatic recovery system** limited in time (optional depending on difficulty).
+
+---
+
+## 🛠️ Development
+
+- **Game engine:** Unity (recommended version: 2021.3 or later)
+- **Language:** C#
+- **Cross-platform:** PC (Windows) - other platforms to come
 
 ---
 
-## 🚀 Lancer le jeu
+## Planned Features
 
-1. Extrait le zip. 
-2. Ouvrir le projet dans Unity.
-3. Lancer la scène principale (`MainScene.unity`).
-4. Appuyer sur **Play** pour commencer.
+-  Enemy IA with navigation
+-  Spawn system
+-  Dynamic HUD (life, ammunition)
+-  Fluid weapons change
 
 ---
+
+## 📸 Screenshots
+
+*(Add game captures here when available)*
+
+---
+
+## 🚀 Start game
+
+1. Extract the zip. 
+2. Open the project in Unity.
+3. Launch the main stage (‘MainScene.unity’).
+4. Press **Play** to start.
+
+---
+
+> [!WARNING]
+> This is a beta version! modifications will be made!
+
